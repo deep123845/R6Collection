@@ -4,7 +4,10 @@ const fs = require('fs');
 const path = require('path');
 const cheerio = require('cheerio');
 const db = require('./db');
+const cors = require('cors');
 const app = express();
+
+app.use(cors());
 
 // Example image URL, replace with your actual URL
 const R6URL = "https://r6s.skin/packs/celebration/";
@@ -75,7 +78,7 @@ app.post('/items/:id', (req, _res) => {
     db.setItemOwned(id, owned);
 });
 
-const PORT = 3101;
+const PORT = 3100;
 app.listen(PORT, async () => {
     await scrapePage();
     console.log(`Server is running on http://localhost:${PORT}`);
