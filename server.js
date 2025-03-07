@@ -3,6 +3,7 @@ const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 const cheerio = require('cheerio');
+const db = require('./db');
 const app = express();
 
 // Example image URL, replace with your actual URL
@@ -33,25 +34,17 @@ async function scrapePage() {
             const name = $(element).find('.name').text().trim();
             const imageUrl = $(element).find('img').attr('src').split('/').pop();
 
-            const onclickContent = $(element).attr('onclick');
-            let operatorName = '';
-            if (onclickContent.split('<br><br>- ').length >= 2) {
-                operatorName = onclickContent.split('<br><br>- ')[1].split('"')[0];
-            } else if (onclickContent.split('n: "').length >= 2) {
-                operatorName = onclickContent.split('n: "')[1].split(' ')[0];
-            }
-
             let labelCategory = '';
             $(element).parents().each((i, parent) => {
                 const label = $(parent).prevAll('p.label').first();
                 if (label.length) {
-                    labelCategory = label.text().split(' ')[0];
+                    labelCategory = label.text().split('(')[0].trim();
                     return false;
                 }
             });
 
             if (name && imageUrl) {
-                items.push({ name, operatorName, labelCategory, imageUrl });
+                items.push({ name, labelCategory, imageUrl });
             }
         });
 
@@ -68,7 +61,11 @@ async function scrapePage() {
 
 const PORT = 3101;
 app.listen(PORT, async () => {
-    const items = await scrapePage();
-    console.log(items);
+    if (db.getAllItems().length === 0) {
+        const items = await scrapePage();
+        for (const item of items) {
+            db.insertItem(item.name, item.labelCategory, item.imageUrl);
+        }
+    }
     console.log(`Server is running on http://localhost:${PORT}`);
 });
