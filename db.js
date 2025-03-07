@@ -12,6 +12,7 @@ class Database {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT,
                 category TEXT,
+                owned BOOLEAN DEFAULT 0,
                 imageUrl TEXT
             )
         `).run();
@@ -26,6 +27,14 @@ class Database {
             INSERT INTO items (name, category, imageUrl)
             VALUES (@name, @category, @imageUrl)
         `).run({ name, category, imageUrl });
+    }
+
+    setItemOwned(id, owned) {
+        this.db.prepare(`
+            UPDATE items
+            SET owned = @owned
+            WHERE id = @id
+        `).run({ id, owned });
     }
 
     close() {

@@ -65,6 +65,16 @@ async function scrapePage() {
     }
 }
 
+app.get('/items', (_req, res) => {
+    res.json(db.getAllItems());
+});
+
+app.post('/items/:id', (req, _res) => {
+    const { id } = req.params;
+    const { owned } = req.body;
+    db.setItemOwned(id, owned);
+});
+
 const PORT = 3101;
 app.listen(PORT, async () => {
     await scrapePage();
