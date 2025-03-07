@@ -25,6 +25,10 @@ async function downloadImage(imageName) {
 }
 
 async function scrapePage() {
+    if (db.getAllItems().length !== 0) {
+        return;
+    }
+
     try {
         const { data } = await axios.get(R6URL);
         const $ = cheerio.load(data);
@@ -52,7 +56,9 @@ async function scrapePage() {
             downloadImage(item.imageUrl);
         }
 
-        return items;
+        for (const item of items) {
+            db.insertItem(item.name, item.labelCategory, item.imageUrl);
+        }
     } catch (error) {
         console.error("Failed to scrape images:", error);
         return [];
@@ -61,11 +67,6 @@ async function scrapePage() {
 
 const PORT = 3101;
 app.listen(PORT, async () => {
-    if (db.getAllItems().length === 0) {
-        const items = await scrapePage();
-        for (const item of items) {
-            db.insertItem(item.name, item.labelCategory, item.imageUrl);
-        }
-    }
+    await scrapePage();
     console.log(`Server is running on http://localhost:${PORT}`);
 });
