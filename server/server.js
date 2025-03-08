@@ -8,6 +8,8 @@ const cors = require('cors');
 const app = express();
 
 app.use(cors());
+app.use(express.json());
+app.use('/icons', express.static(path.join(__dirname, 'data', 'images')));
 
 // Example image URL, replace with your actual URL
 const R6URL = "https://r6s.skin/packs/celebration/";
@@ -72,13 +74,13 @@ app.get('/items', (_req, res) => {
     res.json(db.getAllItems());
 });
 
-app.post('/items/:id', (req, _res) => {
-    const { id } = req.params;
-    const { owned } = req.body;
+app.put('/item/toggle', (req, res) => {
+    const { id, owned } = req.body;
     db.setItemOwned(id, owned);
+    res.sendStatus(200);
 });
 
-const PORT = 3100;
+const PORT = 3101;
 app.listen(PORT, async () => {
     await scrapePage();
     console.log(`Server is running on http://localhost:${PORT}`);

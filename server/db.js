@@ -30,6 +30,7 @@ class Database {
     }
 
     setItemOwned(id, owned) {
+        owned = owned ? 1 : 0;
         this.db.prepare(`
             UPDATE items
             SET owned = @owned
