@@ -20,7 +20,7 @@ function App() {
       .then(data => setItems(data));
   }, []);
 
-  const handleCheckboxChange = (id: number, owned: boolean) => {
+  const handleItemClick = (id: number, owned: boolean) => {
     fetch(`${SERVER_URL}/item/toggle`, {
       method: 'PUT',
       headers: {
@@ -33,8 +33,8 @@ function App() {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="fixed w-[90%] bg-gray-200 h-10 mb-4">
+    <div className="bg-zinc-900 mx-auto p-4">
+      <div className="fixed w-[90%] bg-gray-200 h-10 mb-4 inset-x-1/20">
         <div
           className="bg-green-600 h-10 text-black"
           style={{ width: `${percentOwned}%` }}
@@ -44,20 +44,20 @@ function App() {
           </span>
         </div>
       </div>
-      <ul>
+      <div className="grid grid-cols-4 gap-4 pt-16">
         {items.map(item => (
-          <li key={item.id} className="flex items-center mb-2">
-            <input
-              type="checkbox"
-              checked={item.owned}
-              onChange={(e) => handleCheckboxChange(item.id, e.target.checked)}
-              className="mr-2"
-            />
-            <span>{item.name} - {item.category}</span>
-            <img src={`${SERVER_URL}/icons/${item.imageUrl}`} alt={item.name} className="w-10 h-10 ml-2" />
-          </li>
+          <div
+            key={item.id}
+            className={`p-2 border-4 rounded-2xl bg-zinc-800 ${item.owned ? 'border-green-600' : 'border-red-600'}`}
+            onClick={() => handleItemClick(item.id, !item.owned)}
+          >
+            <img src={`${SERVER_URL}/icons/${item.imageUrl}`} alt={item.name} className="w-full h-32 object-contain" />
+            <div className="text-center mt-2">
+              <span>{item.name} - {item.category}</span>
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
