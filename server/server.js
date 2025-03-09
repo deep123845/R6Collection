@@ -42,6 +42,8 @@ async function scrapePage() {
         $('a.typeCard').each((index, element) => {
             const name = $(element).find('.name').text().trim();
             const imageUrl = $(element).find('img').attr('src').split('/').pop();
+            const rarity = $(element).find('.rarity').attr('class').split(' ')[1];
+            const collection = $(element).find('.collection').attr('class').split(' ')[1];
 
             let labelCategory = '';
             $(element).parents().each((i, parent) => {
@@ -53,7 +55,7 @@ async function scrapePage() {
             });
 
             if (name && imageUrl) {
-                items.push({ name, labelCategory, imageUrl });
+                items.push({ name, labelCategory, rarity, collection, imageUrl });
             }
         });
 
@@ -62,7 +64,7 @@ async function scrapePage() {
         }
 
         for (const item of items) {
-            db.insertItem(item.name, item.labelCategory, item.imageUrl);
+            db.insertItem(item.name, item.labelCategory, item.rarity, item.collection, item.imageUrl);
         }
     } catch (error) {
         console.error("Failed to scrape images:", error);
