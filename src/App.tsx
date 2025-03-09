@@ -5,6 +5,8 @@ interface Item {
   id: number;
   name: string;
   category: string;
+  rarity: string;
+  collection: string;
   imageUrl: string;
   owned: boolean;
 }
@@ -43,6 +45,9 @@ function App() {
     return amountCategories;
   }
 
+  function getIconUrl(value: string) {
+    return `${SERVER_URL}/icons/${value}.png`;
+  }
 
   const handleItemClick = (id: number, owned: boolean) => {
     console.log(percentOwnedCategories);
@@ -92,10 +97,12 @@ function App() {
         {items.map(item => (
           <div
             key={item.id}
-            className={`p-2 border-4 rounded-2xl bg-zinc-800 ${item.owned ? 'border-green-600' : 'border-red-600'}`}
+            className={`relative p-2 border-4 rounded-2xl bg-zinc-800 ${item.owned ? 'border-green-600' : 'border-red-600'}`}
             onClick={() => handleItemClick(item.id, !item.owned)}
           >
             <img src={`${SERVER_URL}/icons/${item.imageUrl}`} alt={item.name} className="w-full h-32 object-contain" />
+            <img src={getIconUrl(item.rarity)} alt={item.rarity} className="absolute top-1 left-1 w-8 h-8 rounded-xl" />
+            <img src={getIconUrl(item.collection)} alt={item.collection} className="absolute top-1 right-1 w-6 h-7 rounded-xl" />
             <div className="text-center mt-2">
               <span>{item.name} - {item.category}</span>
             </div>
