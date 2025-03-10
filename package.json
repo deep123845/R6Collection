@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "main": "main.js",
+  "author": "Deep Raj",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -46,7 +47,15 @@
       "buildResources": "build"
     },
     "win": {
-      "target": "portable"
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
     }
   }
 }
