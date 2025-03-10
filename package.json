@@ -3,14 +3,14 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "main": "main.cjs",
+  "main": "main.js",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "electron .",
-    "package": "electron-packager . R6Collection --platform=win32 --arch=x64 --out=release-builds"
+    "dist": "electron-builder"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.0.12",
@@ -24,7 +24,7 @@
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
     "electron": "^35.0.0",
-    "electron-packager": "^17.1.2",
+    "electron-builder": "^24.3.0",
     "eslint": "^9.21.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
@@ -32,5 +32,21 @@
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.24.1",
     "vite": "^6.2.0"
+  },
+  "build": {
+    "appId": "com.example.r6collection",
+    "productName": "R6 Collection",
+    "files": [
+      "dist/**/*",
+      "main.js",
+      "preload.js",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "build"
+    },
+    "win": {
+      "target": "portable"
+    }
   }
 }
