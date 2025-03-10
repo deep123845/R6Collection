@@ -13,6 +13,7 @@ interface Item {
 
 function App() {
   const [allItems, setAllItems] = useState<Item[]>([]);
+  const [collapsedCategories, setCollapsedCategories] = useState<{ [key: string]: boolean }>({});
   const itemsByCategory = getItemsByCategory(allItems);
   const percentOwned = allItems.filter(item => item.owned).length / allItems.length * 100;
   const percentOwnedCategories = getPercentOwnedCategories(itemsByCategory);
@@ -23,7 +24,6 @@ function App() {
       .then(response => response.json())
       .then(data => setAllItems(data.sort((a: Item, b: Item) => a.owned === b.owned ? 0 : b.owned ? -1 : 1)));
   }, []);
-  /*.sort((a: Item, b: Item) => a.name.localeCompare(b.name)).sort((a: Item, b: Item) => a.category.localeCompare(b.category)))*/
 
   function getItemsByCategory(itemsArray: Item[]) {
     const categories = [...new Set(itemsArray.map(item => item.category))];
@@ -63,24 +63,41 @@ function App() {
     });
   };
 
+  const toggleCategoryCollapse = (category: string) => {
+    setCollapsedCategories(prevState => ({
+      ...prevState,
+      [category]: !prevState[category]
+    }));
+  };
+
   return (
     <div className="bg-zinc-900 mx-auto p-4">
-      <div className="z-1 fixed w-[90%] bg-gray-200 h-10 mb-4 inset-x-1/20">
-        <div
-          className="bg-green-600 h-10 text-black"
-          style={{ width: `${percentOwned}%` }}
-        >
-          <span className="z-1 absolute h-10 inset-0 flex items-center justify-center text-black font-bold">
-            {(percentOwned / 100 * allItems.length).toFixed()} of {allItems.length}
-          </span>
+      <div className="z-1 fixed w-[96%] bg-zinc-700 p-2 rounded-xl pb-12 inset-x-2/100">
+        <div className="text-white font-bold text-center mb-2">
+          R6 Celebration Collection
+        </div>
+        <div className="z-1 fixed w-[90%] bg-gray-200 h-10 mb-4 inset-x-1/20">
+          <div
+            className="bg-green-600 h-10 text-black"
+            style={{ width: `${percentOwned}%` }}
+          >
+            <span className="z-1 absolute h-10 inset-0 flex items-center justify-center text-black font-bold">
+              {(percentOwned / 100 * allItems.length).toFixed()} of {allItems.length}
+            </span>
+          </div>
         </div>
       </div>
-      <div className='mb-16' />
+      <div className='mb-28' />
       <div key={'all'}>
         {itemsByCategory.map(items => (
-          <div className='container mx-auto' key={items.category}>
-            <div className='mb-4 mt-4'>
-              <div className="text-white font-bold mb-1">{items.category}</div>
+          <div className='container mx-auto rounded-xl px-2 m-2 bg-zinc-700' key={items.category}>
+            <div className='mb-2 pb-2 cursor-pointer' onClick={() => toggleCategoryCollapse(items.category)}>
+              <div className="relative text-white font-bold mb-1">
+                {items.category}
+                <span className='absolute right-1 text-zinc-300'>
+                  {collapsedCategories[items.category] ? '▼' : '▲'}
+                </span>
+              </div>
               <div className="relative w-full bg-gray-200 h-6">
                 <div>
                   <span className="absolute h-6 inset-0 flex items-center justify-center text-black font-bold">
@@ -94,23 +111,24 @@ function App() {
                 </div>
               </div>
             </div>
-            <div key={items.category} className="grid grid-cols-4 gap-4">
-              {items.categoryItems.map(item => (
-                <div
-                  key={item.id}
-                  className={`relative p-2 border-4 rounded-2xl bg-zinc-800 ${item.owned ? 'border-green-600' : 'border-red-600'}`}
-                  onClick={() => handleItemClick(item.id, !item.owned)}
-                >
-                  <img src={`${SERVER_URL}/icons/${item.imageUrl}`} alt={item.name} className="w-full h-32 object-contain" />
-                  <img src={getIconUrl(item.rarity)} alt={item.rarity} className="absolute top-1 left-1 w-8 h-8 rounded-xl" />
-                  <img src={getIconUrl(item.collection)} alt={item.collection} className="absolute top-1 right-1 w-6 h-7 rounded-xl" />
-                  <div className="text-center mt-2">
-                    <span>{item.name}</span>
+            {!collapsedCategories[items.category] && (
+              <div key={items.category} className="grid grid-cols-4 gap-4">
+                {items.categoryItems.map(item => (
+                  <div
+                    key={item.id}
+                    className={`relative p-2 border-4 rounded-2xl bg-zinc-800 ${item.owned ? 'border-green-600' : 'border-red-600'}`}
+                    onClick={() => handleItemClick(item.id, !item.owned)}
+                  >
+                    <img src={`${SERVER_URL}/icons/${item.imageUrl}`} alt={item.name} className="w-full h-32 object-contain" />
+                    <img src={getIconUrl(item.rarity)} alt={item.rarity} className="absolute top-1 left-1 w-8 h-8 rounded-xl" />
+                    <img src={getIconUrl(item.collection)} alt={item.collection} className="absolute top-1 right-1 w-6 h-7 rounded-xl" />
+                    <div className="text-center mt-2">
+                      <span>{item.name}</span>
+                    </div>
                   </div>
-                </div>
-
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         ))}
       </div>
