@@ -27,7 +27,7 @@ function App() {
       items.sort((a: Item, b: Item) => a.owned === b.owned ? 0 : b.owned ? -1 : 1);
       setAllItems(items);
     } else {
-      fetch('/items.json')
+      fetch('./items.json')
         .then(response => response.json())
         .then((items: Item[]) => {
           items.sort((a: Item, b: Item) => a.id - b.id);

@@ -16,6 +16,9 @@ dist-ssr
 server/data
 *.db*
 
+# release
+release-builds
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
