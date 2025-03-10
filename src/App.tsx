@@ -16,7 +16,6 @@ function App() {
   const [collapsedCategories, setCollapsedCategories] = useState<{ [key: string]: boolean }>({});
   const itemsByCategory = getItemsByCategory(allItems);
   const percentOwned = allItems.filter(item => item.owned).length / allItems.length * 100;
-  const percentOwnedCategories = getPercentOwnedCategories(itemsByCategory);
   const SERVER_URL = 'http://127.0.0.1:3101';
 
   useEffect(() => {
@@ -34,14 +33,6 @@ function App() {
     return itemsByCategory;
   }
 
-  function getPercentOwnedCategories(itemsByCategory: { category: string, categoryItems: Item[] }[]) {
-    const percentOwnedCategories = itemsByCategory.map(({ category, categoryItems }) => {
-      const percentOwned = categoryItems.filter(item => item.owned).length / categoryItems.length * 100;
-      return { category, percentOwned };
-    });
-    return percentOwnedCategories;
-  }
-
   function getPercentOwned(items: Item[]) {
     return items.filter(item => item.owned).length / items.length * 100;
   }
@@ -51,7 +42,6 @@ function App() {
   }
 
   const handleItemClick = (id: number, owned: boolean) => {
-    console.log(percentOwnedCategories);
     fetch(`${SERVER_URL}/item/toggle`, {
       method: 'PUT',
       headers: {
