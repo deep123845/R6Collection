@@ -16,13 +16,40 @@ function App() {
   const [collapsedCategories, setCollapsedCategories] = useState<{ [key: string]: boolean }>({});
   const itemsByCategory = getItemsByCategory(allItems);
   const percentOwned = allItems.filter(item => item.owned).length / allItems.length * 100;
-  const SERVER_URL = 'http://127.0.0.1:3101';
 
   useEffect(() => {
-    fetch(`${SERVER_URL}/items`)
-      .then(response => response.json())
-      .then(data => setAllItems(data.sort((a: Item, b: Item) => a.owned === b.owned ? 0 : b.owned ? -1 : 1)));
+    localStorage.getItem('collapsedCategories') && setCollapsedCategories(JSON.parse(localStorage.getItem('collapsedCategories')!));
+
+    const itemsJSON = localStorage.getItem('allItems');
+    if (itemsJSON) {
+      const items: Item[] = JSON.parse(itemsJSON);
+      items.sort((a: Item, b: Item) => a.id - b.id);
+      items.sort((a: Item, b: Item) => a.owned === b.owned ? 0 : b.owned ? -1 : 1);
+      setAllItems(items);
+    } else {
+      fetch('/items.json')
+        .then(response => response.json())
+        .then((items: Item[]) => {
+          items.sort((a: Item, b: Item) => a.id - b.id);
+          items.sort((a: Item, b: Item) => a.owned === b.owned ? 0 : b.owned ? -1 : 1);
+          setAllItems(items);
+        });
+    }
   }, []);
+
+  useEffect(() => {
+    if (Object.keys(collapsedCategories).length === 0) {
+      return;
+    }
+    localStorage.setItem('collapsedCategories', JSON.stringify(collapsedCategories));
+  }, [collapsedCategories]);
+
+  useEffect(() => {
+    if (allItems.length === 0) {
+      return;
+    }
+    localStorage.setItem('allItems', JSON.stringify(allItems));
+  }, [allItems]);
 
   function getItemsByCategory(itemsArray: Item[]) {
     const categories = [...new Set(itemsArray.map(item => item.category))];
@@ -38,19 +65,11 @@ function App() {
   }
 
   function getIconUrl(value: string) {
-    return `${SERVER_URL}/icons/${value}.png`;
+    return `/images/${value}.png`;
   }
 
   const handleItemClick = (id: number, owned: boolean) => {
-    fetch(`${SERVER_URL}/item/toggle`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ id, owned }),
-    }).then(() => {
-      setAllItems(allItems.map(item => item.id === id ? { ...item, owned } : item));
-    });
+    setAllItems(allItems.map(item => item.id === id ? { ...item, owned } : item));
   };
 
   const toggleCategoryCollapse = (category: string) => {
@@ -109,7 +128,7 @@ function App() {
                     className={`relative p-2 border-4 rounded-2xl bg-zinc-800 ${item.owned ? 'border-green-600' : 'border-red-600'}`}
                     onClick={() => handleItemClick(item.id, !item.owned)}
                   >
-                    <img src={`${SERVER_URL}/icons/${item.imageUrl}`} alt={item.name} className="w-full h-32 object-contain" />
+                    <img src={`/images/${item.imageUrl}`} alt={item.name} className="w-full h-32 object-contain" />
                     <img src={getIconUrl(item.rarity)} alt={item.rarity} className="absolute top-1 left-1 w-8 h-8 rounded-xl" />
                     <img src={getIconUrl(item.collection)} alt={item.collection} className="absolute top-1 right-1 w-6 h-7 rounded-xl" />
                     <div className="text-center mt-2">
