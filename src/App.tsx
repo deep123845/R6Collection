@@ -12,37 +12,38 @@ interface Item {
 }
 
 function App() {
-  const [items, setItems] = useState<Item[]>([]);
-  const percentOwned = items.filter(item => item.owned).length / items.length * 100;
-  const percentOwnedCategories = getPercentOwnedCategories(items);
-  const amountCategories = getAmountCategories(items);
+  const [allItems, setAllItems] = useState<Item[]>([]);
+  const itemsByCategory = getItemsByCategory(allItems);
+  const percentOwned = allItems.filter(item => item.owned).length / allItems.length * 100;
+  const percentOwnedCategories = getPercentOwnedCategories(itemsByCategory);
   const SERVER_URL = 'http://127.0.0.1:3101';
 
   useEffect(() => {
     fetch(`${SERVER_URL}/items`)
       .then(response => response.json())
-      .then(data => setItems(data.sort((a: Item, b: Item) => a.owned === b.owned ? 0 : b.owned ? -1 : 1)));
+      .then(data => setAllItems(data.sort((a: Item, b: Item) => a.owned === b.owned ? 0 : b.owned ? -1 : 1)));
   }, []);
   /*.sort((a: Item, b: Item) => a.name.localeCompare(b.name)).sort((a: Item, b: Item) => a.category.localeCompare(b.category)))*/
-  function getPercentOwnedCategories(itemsArray: Item[]) {
+
+  function getItemsByCategory(itemsArray: Item[]) {
     const categories = [...new Set(itemsArray.map(item => item.category))];
-    const percentOwnedCategories = categories.map(category => {
+    const itemsByCategory = categories.map(category => {
       const categoryItems = itemsArray.filter(item => item.category === category);
+      return { category, categoryItems };
+    });
+    return itemsByCategory;
+  }
+
+  function getPercentOwnedCategories(itemsByCategory: { category: string, categoryItems: Item[] }[]) {
+    const percentOwnedCategories = itemsByCategory.map(({ category, categoryItems }) => {
       const percentOwned = categoryItems.filter(item => item.owned).length / categoryItems.length * 100;
       return { category, percentOwned };
-    }
-    );
+    });
     return percentOwnedCategories;
   }
 
-  function getAmountCategories(itemsArray: Item[]) {
-    const categories = [...new Set(itemsArray.map(item => item.category))];
-    const amountCategories = categories.map(category => {
-      const categoryItems = itemsArray.filter(item => item.category === category);
-      const amount = categoryItems.length;
-      return { category, amount };
-    });
-    return amountCategories;
+  function getPercentOwned(items: Item[]) {
+    return items.filter(item => item.owned).length / items.length * 100;
   }
 
   function getIconUrl(value: string) {
@@ -58,7 +59,7 @@ function App() {
       },
       body: JSON.stringify({ id, owned }),
     }).then(() => {
-      setItems(items.map(item => item.id === id ? { ...item, owned } : item));
+      setAllItems(allItems.map(item => item.id === id ? { ...item, owned } : item));
     });
   };
 
@@ -70,41 +71,45 @@ function App() {
           style={{ width: `${percentOwned}%` }}
         >
           <span className="z-1 absolute h-10 inset-0 flex items-center justify-center text-black font-bold">
-            {(percentOwned / 100 * items.length).toFixed()} of {items.length}
+            {(percentOwned / 100 * allItems.length).toFixed()} of {allItems.length}
           </span>
         </div>
       </div>
-      <div className="pt-16">
-        {percentOwnedCategories.map(({ category, percentOwned }) => (
-          <div key={category} className="mb-4">
-            <div className="text-white font-bold mb-1">{category}</div>
-            <div className="relative w-full bg-gray-200 h-6">
-              <div>
-                <span className="absolute h-6 inset-0 flex items-center justify-center text-black font-bold">
-                  {(percentOwned / 100 * (amountCategories.find(item => item.category === category)?.amount || 0)).toFixed(0)} of {amountCategories.find(item => item.category === category)?.amount || 0}
-                </span>
-                <div
-                  className="bg-green-600 h-6 text-black"
-                  style={{ width: `${percentOwned}%` }}
-                >
+      <div className='mb-16' />
+      <div key={'all'}>
+        {itemsByCategory.map(items => (
+          <div className='container mx-auto' key={items.category}>
+            <div className='mb-4 mt-4'>
+              <div className="text-white font-bold mb-1">{items.category}</div>
+              <div className="relative w-full bg-gray-200 h-6">
+                <div>
+                  <span className="absolute h-6 inset-0 flex items-center justify-center text-black font-bold">
+                    {(getPercentOwned(items.categoryItems) / 100 * items.categoryItems.length).toFixed(0)} of {items.categoryItems.length}
+                  </span>
+                  <div
+                    className="bg-green-600 h-6 text-black"
+                    style={{ width: `${getPercentOwned(items.categoryItems)}%` }}
+                  >
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
-      <div className="grid grid-cols-4 gap-4 pt-16">
-        {items.map(item => (
-          <div
-            key={item.id}
-            className={`relative p-2 border-4 rounded-2xl bg-zinc-800 ${item.owned ? 'border-green-600' : 'border-red-600'}`}
-            onClick={() => handleItemClick(item.id, !item.owned)}
-          >
-            <img src={`${SERVER_URL}/icons/${item.imageUrl}`} alt={item.name} className="w-full h-32 object-contain" />
-            <img src={getIconUrl(item.rarity)} alt={item.rarity} className="absolute top-1 left-1 w-8 h-8 rounded-xl" />
-            <img src={getIconUrl(item.collection)} alt={item.collection} className="absolute top-1 right-1 w-6 h-7 rounded-xl" />
-            <div className="text-center mt-2">
-              <span>{item.name} - {item.category}</span>
+            <div key={items.category} className="grid grid-cols-4 gap-4">
+              {items.categoryItems.map(item => (
+                <div
+                  key={item.id}
+                  className={`relative p-2 border-4 rounded-2xl bg-zinc-800 ${item.owned ? 'border-green-600' : 'border-red-600'}`}
+                  onClick={() => handleItemClick(item.id, !item.owned)}
+                >
+                  <img src={`${SERVER_URL}/icons/${item.imageUrl}`} alt={item.name} className="w-full h-32 object-contain" />
+                  <img src={getIconUrl(item.rarity)} alt={item.rarity} className="absolute top-1 left-1 w-8 h-8 rounded-xl" />
+                  <img src={getIconUrl(item.collection)} alt={item.collection} className="absolute top-1 right-1 w-6 h-7 rounded-xl" />
+                  <div className="text-center mt-2">
+                    <span>{item.name}</span>
+                  </div>
+                </div>
+
+              ))}
             </div>
           </div>
         ))}
